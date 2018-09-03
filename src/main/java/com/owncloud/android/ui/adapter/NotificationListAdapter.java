@@ -76,7 +76,7 @@ import butterknife.ButterKnife;
 public class NotificationListAdapter extends RecyclerView.Adapter<NotificationListAdapter.NotificationViewHolder> {
     private static final String TAG = NotificationListAdapter.class.getSimpleName();
     private StyleSpan styleSpanBold = new StyleSpan(Typeface.BOLD);
-    private ForegroundColorSpan foregroundColorSpanBlack = new ForegroundColorSpan(Color.BLACK);
+    private ForegroundColorSpan foregroundColorSpanBlack;
 
     private List<Notification> notificationsList;
     private OwnCloudClient client;
@@ -86,6 +86,7 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
         this.notificationsList = new ArrayList<>();
         this.client = client;
         this.notificationsActivity = notificationsActivity;
+        foregroundColorSpanBlack = new ForegroundColorSpan(notificationsActivity.getResources().getColor(R.color.textColor));
     }
 
     public void setNotificationItems(List<Notification> notificationItems) {
