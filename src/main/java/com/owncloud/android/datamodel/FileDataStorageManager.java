@@ -207,6 +207,7 @@ public class FileDataStorageManager {
         cv.put(ProviderTableMeta.FILE_UNREAD_COMMENTS_COUNT, file.getUnreadCommentsCount());
         cv.put(ProviderTableMeta.FILE_OWNER_ID, file.getOwnerId());
         cv.put(ProviderTableMeta.FILE_OWNER_DISPLAY_NAME, file.getOwnerDisplayName());
+        cv.put(ProviderTableMeta.FILE_NOTE, file.getNote());
 
         boolean sameRemotePath = fileExists(file.getRemotePath());
         if (sameRemotePath ||
@@ -447,6 +448,7 @@ public class FileDataStorageManager {
         cv.put(ProviderTableMeta.FILE_UNREAD_COMMENTS_COUNT, folder.getUnreadCommentsCount());
         cv.put(ProviderTableMeta.FILE_OWNER_ID, folder.getOwnerId());
         cv.put(ProviderTableMeta.FILE_OWNER_DISPLAY_NAME, folder.getOwnerDisplayName());
+        cv.put(ProviderTableMeta.FILE_NOTE, folder.getNote());
 
         return cv;
     }
@@ -485,6 +487,7 @@ public class FileDataStorageManager {
         cv.put(ProviderTableMeta.FILE_UNREAD_COMMENTS_COUNT, file.getUnreadCommentsCount());
         cv.put(ProviderTableMeta.FILE_OWNER_ID, file.getOwnerId());
         cv.put(ProviderTableMeta.FILE_OWNER_DISPLAY_NAME, file.getOwnerDisplayName());
+        cv.put(ProviderTableMeta.FILE_NOTE, file.getNote());
 
         return cv;
     }
@@ -983,6 +986,7 @@ public class FileDataStorageManager {
             file.setUnreadCommentsCount(c.getInt(c.getColumnIndex(ProviderTableMeta.FILE_UNREAD_COMMENTS_COUNT)));
             file.setOwnerId(c.getString(c.getColumnIndex(ProviderTableMeta.FILE_OWNER_ID)));
             file.setOwnerDisplayName(c.getString(c.getColumnIndex(ProviderTableMeta.FILE_OWNER_DISPLAY_NAME)));
+            file.setNote(c.getString(c.getColumnIndex(ProviderTableMeta.FILE_NOTE)));
         }
 
         return file;

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   Nextcloud Android client application
 
   Copyright (C) 2018 Andy Scherzinger
@@ -31,15 +30,15 @@
         android:paddingTop="@dimen/standard_eigth_padding">
 
         <androidx.appcompat.widget.SearchView
+            android:id="@+id/searchView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/searchView"
             android:layout_marginStart="@dimen/standard_eighth_margin"
             android:layout_marginLeft="@dimen/standard_eighth_margin"
             android:layout_marginEnd="@dimen/standard_margin"
             android:layout_marginRight="@dimen/standard_margin"
-            style="@style/ownCloud.SearchView"
-            android:hint="@string/share_search"/>
+            android:hint="@string/share_search"
+            style="@style/ownCloud.SearchView"/>
 
         <LinearLayout
             android:id="@+id/shared_with_you_container"
@@ -56,7 +55,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:contentDescription="@string/avatar"
-                app:srcCompat="@drawable/ic_user"/>
+                app:srcCompat="@drawable/ic_user" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -71,7 +70,17 @@
                     android:paddingTop="@dimen/standard_half_padding"
                     android:paddingRight="@dimen/standard_padding"
                     android:text="@string/shared_with_you_by"
-                    android:textSize="16sp"/>
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/shared_with_you_note"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/standard_padding"
+                    android:paddingTop="@dimen/standard_half_padding"
+                    android:paddingRight="@dimen/standard_padding"
+                    android:textSize="16sp" />
+
             </LinearLayout>
         </LinearLayout>
 
@@ -149,7 +158,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:divider="@drawable/divider"
-            android:dividerHeight="1dp"/>
+            android:dividerHeight="1dp" />
 
         <TextView
             android:id="@+id/shareNoUsers"
