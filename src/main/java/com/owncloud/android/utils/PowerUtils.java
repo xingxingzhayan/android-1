@@ -5,6 +5,8 @@ import android.content.Context;
 import android.os.Build;
 import android.os.PowerManager;
 
+import com.owncloud.android.BuildConfig;
+
 public final class PowerUtils {
 
     private PowerUtils() {
@@ -19,7 +21,20 @@ public final class PowerUtils {
     public static boolean isPowerSaveMode(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-            return powerManager != null && powerManager.isPowerSaveMode();
+
+            if (powerManager == null) {
+                return false;
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (powerManager.isPowerSaveMode()) {
+                    return !powerManager.isIgnoringBatteryOptimizations(BuildConfig.APPLICATION_ID);
+                } else {
+                    return false;
+                }
+            } else {
+                return powerManager.isPowerSaveMode();
+            }
         }
 
         // For older versions, we just say that device is not in power save mode
