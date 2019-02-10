@@ -71,6 +71,9 @@ import com.owncloud.android.utils.MimeTypeUtil;
 import com.owncloud.android.utils.ThemeUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
@@ -126,6 +129,9 @@ public class Preferences extends PreferenceActivity
 
     public static class PreferenceKeys {
         public static final String STORAGE_PATH = "storage_path";
+        public static final String EXCLUDED_AUTOUPLOAD_PATTEN_KEY = "EXCLUDED_AUTOUPLOAD_PATTEN_KEY";
+        private static final String[] SET_VALUES = new String[] { ".thumbdata*", ".pdf" };
+        public static final Set<String> EXCLUDED_AUTOUPLOAD_PATTEN_DEFAULT_VALUES = new HashSet<String>(Arrays.asList(SET_VALUES));
     }
 
     @SuppressWarnings("deprecation")
