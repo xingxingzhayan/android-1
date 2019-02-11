@@ -47,7 +47,7 @@ import com.owncloud.android.lib.common.OwnCloudClientManagerFactory;
 import com.owncloud.android.lib.common.operations.RemoteOperation;
 import com.owncloud.android.lib.common.operations.RemoteOperationResult;
 import com.owncloud.android.lib.common.utils.Log_OC;
-import com.owncloud.android.lib.resources.notifications.GetRemoteNotificationsOperation;
+import com.owncloud.android.lib.resources.notifications.GetNotificationsRemoteOperation;
 import com.owncloud.android.lib.resources.notifications.models.Notification;
 import com.owncloud.android.ui.adapter.NotificationListAdapter;
 import com.owncloud.android.utils.DisplayUtils;
@@ -269,7 +269,7 @@ public class NotificationsActivity extends FileActivity {
                 recyclerView.setAdapter(adapter);
             }
 
-            RemoteOperation getRemoteNotificationOperation = new GetRemoteNotificationsOperation();
+            RemoteOperation getRemoteNotificationOperation = new GetNotificationsRemoteOperation();
             final RemoteOperationResult result = getRemoteNotificationOperation.execute(client);
 
             if (result.isSuccess() && result.getNotificationData() != null) {

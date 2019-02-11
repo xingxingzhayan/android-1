@@ -45,12 +45,22 @@ import com.owncloud.android.datamodel.SignatureVerification;
 import com.owncloud.android.lib.common.OwnCloudAccount;
 import com.owncloud.android.lib.common.OwnCloudClient;
 import com.owncloud.android.lib.common.OwnCloudClientManagerFactory;
+import com.owncloud.android.lib.common.operations.RemoteOperation;
+import com.owncloud.android.lib.common.operations.RemoteOperationResult;
 import com.owncloud.android.lib.common.utils.Log_OC;
 import com.owncloud.android.lib.resources.notifications.DeleteNotificationRemoteOperation;
+import com.owncloud.android.lib.resources.notifications.GetNotificationRemoteOperation;
+import com.owncloud.android.lib.resources.notifications.models.Action;
+import com.owncloud.android.lib.resources.notifications.models.Notification;
 import com.owncloud.android.ui.activity.NotificationsActivity;
 import com.owncloud.android.ui.notifications.NotificationUtils;
 import com.owncloud.android.utils.PushUtils;
 import com.owncloud.android.utils.ThemeUtils;
+
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.methods.DeleteMethod;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -71,16 +81,18 @@ public class NotificationJob extends Job {
     public static final String KEY_NOTIFICATION_SUBJECT = "subject";
     public static final String KEY_NOTIFICATION_SIGNATURE = "signature";
     public static final String KEY_NOTIFICATION_ACCOUNT = "KEY_NOTIFICATION_ACCOUNT";
+    public static final String KEY_NOTIFICATION_ACTION_LINK = "KEY_NOTIFICATION_ACTION_LINK";
+    public static final String KEY_NOTIFICATION_ACTION_TYPE = "KEY_NOTIFICATION_ACTION_TYPE";
     private static final String PUSH_NOTIFICATION_ID = "PUSH_NOTIFICATION_ID";
     private static final String NUMERIC_NOTIFICATION_ID = "NUMERIC_NOTIFICATION_ID";
 
     private Random randomId = new Random();
+    private Context context;
 
     @NonNull
     @Override
     protected Result onRunJob(@NonNull Params params) {
-
-        Context context = getContext();
+        context = getContext();
         PersistableBundleCompat persistableBundleCompat = getParams().getExtras();
         String subject = persistableBundleCompat.getString(KEY_NOTIFICATION_SUBJECT, "");
         String signature = persistableBundleCompat.getString(KEY_NOTIFICATION_SIGNATURE, "");
@@ -107,8 +119,7 @@ public class NotificationJob extends Job {
 
                         // We ignore Spreed messages for now
                         if (!"spreed".equals(decryptedPushMessage.getApp())) {
-                            fetchCompleteNotification();
-                            sendNotification(decryptedPushMessage, signatureVerification.getAccount());
+                            fetchCompleteNotification(signatureVerification.getAccount(), decryptedPushMessage);
                         }
                     }
                 } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e1) {
@@ -122,9 +133,8 @@ public class NotificationJob extends Job {
         return Result.SUCCESS;
     }
 
-    private void sendNotification(DecryptedPushMessage pushMessage, Account account) {
-        Context context = getContext();
-        Intent intent = new Intent(getContext(), NotificationsActivity.class);
+    private void sendNotification(Notification notification, Account account) {
+        Intent intent = new Intent(context, NotificationsActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra(KEY_NOTIFICATION_ACCOUNT, account.name);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
@@ -137,28 +147,74 @@ public class NotificationJob extends Job {
                 .setColor(ThemeUtils.primaryColor(account, false, context))
                 .setShowWhen(true)
                 .setSubText(account.name)
-                .setContentTitle(pushMessage.getSubject())
+                .setContentTitle(notification.getSubject())
+                .setContentText(notification.getMessage()) // TODO parse rich message
                 .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent);
 
-        Intent disableDetection = new Intent(context, NotificationJob.NotificationReceiver.class);
-        disableDetection.putExtra(NUMERIC_NOTIFICATION_ID, pushMessage.getNid());
-        disableDetection.putExtra(PUSH_NOTIFICATION_ID, pushNotificationId);
-        disableDetection.putExtra(KEY_NOTIFICATION_ACCOUNT, account.name);
+        // Disable
+        if (notification.getActions().isEmpty()) {
+            Intent disableDetection = new Intent(context, NotificationJob.NotificationReceiver.class);
+            disableDetection.putExtra(NUMERIC_NOTIFICATION_ID, notification.getNotificationId());
+            disableDetection.putExtra(PUSH_NOTIFICATION_ID, pushNotificationId);
+            disableDetection.putExtra(KEY_NOTIFICATION_ACCOUNT, account.name);
 
-        PendingIntent disableIntent = PendingIntent.getBroadcast(context, pushNotificationId, disableDetection,
-                                                                 PendingIntent.FLAG_CANCEL_CURRENT);
+            PendingIntent disableIntent = PendingIntent.getBroadcast(context, pushNotificationId, disableDetection,
+                                                                     PendingIntent.FLAG_CANCEL_CURRENT);
 
-        notificationBuilder.addAction(new NotificationCompat.Action(R.drawable.ic_close,
-                                                                    context.getString(R.string.remove_push_notification), disableIntent));
+            notificationBuilder.addAction(new NotificationCompat.Action(R.drawable.ic_close,
+                                                                        context.getString(R.string.remove_push_notification), disableIntent));
+        } else {
+            // Actions
+            for (Action action : notification.getActions()) {
+                Intent actionIntent = new Intent(context, NotificationJob.NotificationReceiver.class);
+                actionIntent.putExtra(NUMERIC_NOTIFICATION_ID, notification.getNotificationId());
+                actionIntent.putExtra(PUSH_NOTIFICATION_ID, pushNotificationId);
+                actionIntent.putExtra(KEY_NOTIFICATION_ACCOUNT, account.name);
+                actionIntent.putExtra(KEY_NOTIFICATION_ACTION_LINK, action.link);
+                actionIntent.putExtra(KEY_NOTIFICATION_ACTION_TYPE, action.type);
+
+
+                PendingIntent actionPendingIntent = PendingIntent.getBroadcast(context, randomId.nextInt(),
+                                                                               actionIntent,
+                                                                               PendingIntent.FLAG_CANCEL_CURRENT);
+
+                // todo other icon
+                notificationBuilder.addAction(new NotificationCompat.Action(R.drawable.ic_close, action.label,
+                                                                            actionPendingIntent));
+            }
+        }
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(pushNotificationId, notificationBuilder.build());
     }
 
-    private void fetchCompleteNotification() {
+    private void fetchCompleteNotification(Account account, DecryptedPushMessage decryptedPushMessage) {
+        Account currentAccount = AccountUtils.getOwnCloudAccountByName(context, account.name);
 
+        if (currentAccount == null) {
+            Log_OC.e(this, "Account may not be null");
+            return;
+        }
+
+        try {
+            OwnCloudAccount ocAccount = new OwnCloudAccount(currentAccount, context);
+            OwnCloudClient client = OwnCloudClientManagerFactory.getDefaultSingleton()
+                .getClientFor(ocAccount, context);
+            client.setOwnCloudVersion(AccountUtils.getServerVersion(currentAccount));
+
+            RemoteOperationResult result = new GetNotificationRemoteOperation(decryptedPushMessage.nid)
+                .execute(client);
+
+            if (result.isSuccess()) {
+                Notification notification = result.getNotificationData().get(0);
+                sendNotification(notification, account);
+            }
+
+        } catch (Exception e) {
+
+        }
     }
 
     public static class NotificationReceiver extends BroadcastReceiver {
@@ -184,8 +240,15 @@ public class NotificationJob extends Job {
                             .getClientFor(ocAccount, context);
                         client.setOwnCloudVersion(AccountUtils.getServerVersion(currentAccount));
 
-                        new DeleteNotificationRemoteOperation(numericNotificationId).execute(client);
+                        String actionType = intent.getStringExtra(KEY_NOTIFICATION_ACTION_TYPE);
+                        String actionLink = intent.getStringExtra(KEY_NOTIFICATION_ACTION_LINK);
 
+                        if (!TextUtils.isEmpty(actionType) && !TextUtils.isEmpty(actionLink)) {
+                            executeAction(actionType, actionLink, client);
+                        } else {
+                            // TODO check if this is also needed on actions
+                            new DeleteNotificationRemoteOperation(numericNotificationId).execute(client);
+                        }
                         cancel(context, pushNotificationId);
 
                     } catch (com.owncloud.android.lib.common.accounts.AccountUtils.AccountNotFoundException |
@@ -193,6 +256,37 @@ public class NotificationJob extends Job {
                         Log_OC.e(TAG, "Error initializing client", e);
                     }
                 }).start();
+            }
+        }
+
+        private void executeAction(String actionType, String actionLink, OwnCloudClient client) {
+            HttpMethod method;
+
+            switch (actionType) {
+                case "GET":
+                    method = new GetMethod(actionLink);
+                    break;
+
+                case "POST":
+                    method = new PostMethod(actionLink);
+                    break;
+
+                case "DELETE":
+                    method = new DeleteMethod(actionLink);
+                    break;
+
+                default:
+                    // do nothing
+                    return;
+            }
+
+            method.setRequestHeader(RemoteOperation.OCS_API_HEADER, RemoteOperation.OCS_API_HEADER_VALUE);
+
+            int status;
+            try {
+                status = client.executeMethod(method);
+            } catch (IOException e) {
+                Log_OC.e(TAG, "Execution of notification action failed: " + e);
             }
         }
 
