@@ -209,10 +209,10 @@ android {
 dependencies {
     // dependencies for app building
     implementation 'androidx.multidex:multidex:2.0.1'
-//    implementation project('nextcloud-android-library')
-    genericImplementation 'com.github.nextcloud:android-library:deleteNotification-SNAPSHOT'
-    gplayImplementation 'com.github.nextcloud:android-library:deleteNotification-SNAPSHOT'
-    versionDevImplementation 'com.github.nextcloud:android-library:deleteNotification-SNAPSHOT'
+    implementation project('nextcloud-android-library')
+//    genericImplementation 'com.github.nextcloud:android-library:deleteNotification-SNAPSHOT'
+//    gplayImplementation 'com.github.nextcloud:android-library:deleteNotification-SNAPSHOT'
+//    versionDevImplementation 'com.github.nextcloud:android-library:deleteNotification-SNAPSHOT'
     implementation "com.android.support:support-compat:28.0.0"
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'

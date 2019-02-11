@@ -107,6 +107,7 @@ public class NotificationJob extends Job {
 
                         // We ignore Spreed messages for now
                         if (!"spreed".equals(decryptedPushMessage.getApp())) {
+                            fetchCompleteNotification();
                             sendNotification(decryptedPushMessage, signatureVerification.getAccount());
                         }
                     }
@@ -154,6 +155,10 @@ public class NotificationJob extends Job {
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(pushNotificationId, notificationBuilder.build());
+    }
+
+    private void fetchCompleteNotification() {
+
     }
 
     public static class NotificationReceiver extends BroadcastReceiver {
