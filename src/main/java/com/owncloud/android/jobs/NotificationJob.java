@@ -24,6 +24,7 @@ import android.accounts.Account;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
+import android.app.KeyguardManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -34,6 +35,7 @@ import android.media.RingtoneManager;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.evernote.android.job.Job;
 import com.evernote.android.job.util.support.PersistableBundleCompat;
@@ -151,6 +153,7 @@ public class NotificationJob extends Job {
                 .setContentText(notification.getMessage()) // TODO parse rich message
                 .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                 .setAutoCancel(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
                 .setContentIntent(pendingIntent);
 
         // Disable
@@ -185,6 +188,19 @@ public class NotificationJob extends Job {
                                                                             actionPendingIntent));
             }
         }
+
+        notificationBuilder.setPublicVersion(
+            new NotificationCompat.Builder(context, NotificationUtils.NOTIFICATION_CHANNEL_PUSH)
+                .setSmallIcon(R.drawable.notification_icon)
+                .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.notification_icon))
+                .setColor(ThemeUtils.primaryColor(account, false, context))
+                .setShowWhen(true)
+                .setSubText(account.name)
+                .setContentTitle("New Notification")
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                .setAutoCancel(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setContentIntent(pendingIntent).build());
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(pushNotificationId, notificationBuilder.build());
@@ -224,6 +240,13 @@ public class NotificationJob extends Job {
             int numericNotificationId = intent.getIntExtra(NUMERIC_NOTIFICATION_ID, 0);
             int pushNotificationId = intent.getIntExtra(PUSH_NOTIFICATION_ID, 0);
             String accountName = intent.getStringExtra(NotificationJob.KEY_NOTIFICATION_ACCOUNT);
+
+            KeyguardManager myKM = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+
+            if (myKM.inKeyguardRestrictedInputMode()) {
+                Toast.makeText(context, "Locked", Toast.LENGTH_LONG).show();
+                return;
+            }
 
             if (numericNotificationId != 0) {
                 new Thread(() -> {
