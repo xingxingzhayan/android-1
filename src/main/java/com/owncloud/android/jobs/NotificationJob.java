@@ -85,7 +85,6 @@ public class NotificationJob extends Job {
     public static final String KEY_NOTIFICATION_ACCOUNT = "KEY_NOTIFICATION_ACCOUNT";
     public static final String KEY_NOTIFICATION_ACTION_LINK = "KEY_NOTIFICATION_ACTION_LINK";
     public static final String KEY_NOTIFICATION_ACTION_TYPE = "KEY_NOTIFICATION_ACTION_TYPE";
-    private static final String PUSH_NOTIFICATION_ID = "PUSH_NOTIFICATION_ID";
     private static final String NUMERIC_NOTIFICATION_ID = "NUMERIC_NOTIFICATION_ID";
 
     private Random randomId = new Random();
@@ -121,7 +120,11 @@ public class NotificationJob extends Job {
 
                         // We ignore Spreed messages for now
                         if (!"spreed".equals(decryptedPushMessage.getApp())) {
-                            fetchCompleteNotification(signatureVerification.getAccount(), decryptedPushMessage);
+                            if (decryptedPushMessage.getSubject().startsWith("delete")) {
+                                deletePushNotification(decryptedPushMessage);
+                            } else {
+                                fetchCompleteNotification(signatureVerification.getAccount(), decryptedPushMessage);
+                            }
                         }
                     }
                 } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e1) {
@@ -140,7 +143,6 @@ public class NotificationJob extends Job {
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra(KEY_NOTIFICATION_ACCOUNT, account.name);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
-        int pushNotificationId = randomId.nextInt();
 
         NotificationCompat.Builder notificationBuilder =
             new NotificationCompat.Builder(context, NotificationUtils.NOTIFICATION_CHANNEL_PUSH)
@@ -160,20 +162,20 @@ public class NotificationJob extends Job {
         if (notification.getActions().isEmpty()) {
             Intent disableDetection = new Intent(context, NotificationJob.NotificationReceiver.class);
             disableDetection.putExtra(NUMERIC_NOTIFICATION_ID, notification.getNotificationId());
-            disableDetection.putExtra(PUSH_NOTIFICATION_ID, pushNotificationId);
             disableDetection.putExtra(KEY_NOTIFICATION_ACCOUNT, account.name);
 
-            PendingIntent disableIntent = PendingIntent.getBroadcast(context, pushNotificationId, disableDetection,
+            PendingIntent disableIntent = PendingIntent.getBroadcast(context, notification.getNotificationId(),
+                                                                     disableDetection,
                                                                      PendingIntent.FLAG_CANCEL_CURRENT);
 
-            notificationBuilder.addAction(new NotificationCompat.Action(R.drawable.ic_close,
-                                                                        context.getString(R.string.remove_push_notification), disableIntent));
+            notificationBuilder.addAction(new NotificationCompat.Action(R.drawable.ic_close, context.getString(
+                R.string.remove_push_notification),
+                                                                        disableIntent));
         } else {
             // Actions
             for (Action action : notification.getActions()) {
                 Intent actionIntent = new Intent(context, NotificationJob.NotificationReceiver.class);
                 actionIntent.putExtra(NUMERIC_NOTIFICATION_ID, notification.getNotificationId());
-                actionIntent.putExtra(PUSH_NOTIFICATION_ID, pushNotificationId);
                 actionIntent.putExtra(KEY_NOTIFICATION_ACCOUNT, account.name);
                 actionIntent.putExtra(KEY_NOTIFICATION_ACTION_LINK, action.link);
                 actionIntent.putExtra(KEY_NOTIFICATION_ACTION_TYPE, action.type);
@@ -203,7 +205,14 @@ public class NotificationJob extends Job {
                 .setContentIntent(pendingIntent).build());
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        notificationManager.notify(pushNotificationId, notificationBuilder.build());
+        notificationManager.notify(notification.getNotificationId(), notificationBuilder.build());
+    }
+
+    private void deletePushNotification(DecryptedPushMessage decryptedPushMessage) {
+        int id = Integer.parseInt(decryptedPushMessage.getSubject().split(":")[1]);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        notificationManager.cancel(id);
     }
 
     private void fetchCompleteNotification(Account account, DecryptedPushMessage decryptedPushMessage) {
@@ -238,7 +247,6 @@ public class NotificationJob extends Job {
         @Override
         public void onReceive(Context context, Intent intent) {
             int numericNotificationId = intent.getIntExtra(NUMERIC_NOTIFICATION_ID, 0);
-            int pushNotificationId = intent.getIntExtra(PUSH_NOTIFICATION_ID, 0);
             String accountName = intent.getStringExtra(NotificationJob.KEY_NOTIFICATION_ACCOUNT);
 
             KeyguardManager myKM = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
@@ -272,7 +280,7 @@ public class NotificationJob extends Job {
                             // TODO check if this is also needed on actions
                             new DeleteNotificationRemoteOperation(numericNotificationId).execute(client);
                         }
-                        cancel(context, pushNotificationId);
+                        cancel(context, numericNotificationId);
 
                     } catch (com.owncloud.android.lib.common.accounts.AccountUtils.AccountNotFoundException |
                         IOException | OperationCanceledException | AuthenticatorException e) {
