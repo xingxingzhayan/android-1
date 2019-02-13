@@ -270,6 +270,7 @@ dependencies {
 
     findbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.8.0'
     findbugsPlugins 'com.mebigfatguy.fb-contrib:fb-contrib:7.4.3'
+    findbugsPlugins 'jp.f.dev.findbugs.detect.android:AndroidFindbugs:0.5'
 
 //    jacocoAnt "org.jacoco:org.jacoco.ant:${jacocoVersion}"
 //    jacocoAgent "org.jacoco:org.jacoco.agent:${jacocoVersion}"
