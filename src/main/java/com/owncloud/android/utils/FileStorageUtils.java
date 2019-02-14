@@ -27,6 +27,7 @@ import android.webkit.MimeTypeMap;
 
 import com.owncloud.android.MainApp;
 import com.owncloud.android.datamodel.FileDataStorageManager;
+import com.owncloud.android.datamodel.FileDataStorageManagerInterface;
 import com.owncloud.android.datamodel.OCFile;
 import com.owncloud.android.lib.common.utils.Log_OC;
 import com.owncloud.android.lib.resources.files.model.RemoteFile;
@@ -409,7 +410,7 @@ public final class FileStorageUtils {
      * @param storageManager up to date reference to storage manager
      * @return true if file itself or ancestor is encrypted
      */
-    public static boolean checkEncryptionStatus(OCFile file, FileDataStorageManager storageManager) {
+    public static boolean checkEncryptionStatus(OCFile file, FileDataStorageManagerInterface storageManager) {
         if (file.isEncrypted()) {
             return true;
         }

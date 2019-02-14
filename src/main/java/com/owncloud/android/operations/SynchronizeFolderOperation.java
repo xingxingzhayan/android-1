@@ -25,7 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.owncloud.android.datamodel.FileDataStorageManager;
+import com.owncloud.android.datamodel.FileDataStorageManagerInterface;
 import com.owncloud.android.datamodel.OCFile;
 import com.owncloud.android.files.services.FileDownloader;
 import com.owncloud.android.lib.common.OwnCloudClient;
@@ -225,7 +225,7 @@ public class SynchronizeFolderOperation extends SyncOperation {
 
 
     private void removeLocalFolder() {
-        FileDataStorageManager storageManager = getStorageManager();
+        FileDataStorageManagerInterface storageManager = getStorageManager();
         if (storageManager.fileExists(mLocalFolder.getFileId())) {
             String currentSavePath = FileStorageUtils.getSavePath(mAccount.name);
             storageManager.removeFolder(
@@ -260,7 +260,7 @@ public class SynchronizeFolderOperation extends SyncOperation {
             throw new OperationCancelledException();
         }
 
-        FileDataStorageManager storageManager = getStorageManager();
+        FileDataStorageManagerInterface storageManager = getStorageManager();
         List<OCFile> updatedFiles = new Vector<>(folderAndFiles.size() - 1);
 
         // get current data about local contents of the folder to synchronize

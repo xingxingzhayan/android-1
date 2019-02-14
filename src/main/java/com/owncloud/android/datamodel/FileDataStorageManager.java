@@ -67,7 +67,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-public class FileDataStorageManager {
+public class FileDataStorageManager implements FileDataStorageManagerInterface {
     private static final String TAG = FileDataStorageManager.class.getSimpleName();
 
     private static final String AND = "=? AND ";

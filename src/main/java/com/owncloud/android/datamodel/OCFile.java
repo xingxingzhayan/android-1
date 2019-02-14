@@ -54,7 +54,7 @@ public class OCFile implements Parcelable, Comparable<OCFile>, ServerFileInterfa
 
     private static final String TAG = OCFile.class.getSimpleName();
 
-    @Getter  @Setter private long fileId; // android internal ID of the file
+    @Getter @Setter private long fileId; // android internal ID of the file
     @Getter @Setter private long parentId;
     @Getter @Setter private long fileLength;
     @Getter @Setter private long creationTimestamp; // UNIX timestamp of the time the file was created
