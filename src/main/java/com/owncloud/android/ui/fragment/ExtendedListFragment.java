@@ -42,6 +42,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -181,6 +182,13 @@ public class ExtendedListFragment extends Fragment
         searchView = (SearchView) MenuItemCompat.getActionView(item);
         searchView.setOnQueryTextListener(this);
         searchView.setOnCloseListener(this);
+
+
+        SearchView.SearchAutoComplete theTextArea = (SearchView.SearchAutoComplete) searchView.findViewById(R.id.search_src_text);
+        theTextArea.setHighlightColor(ThemeUtils.primaryAccentColor(getContext()));
+
+//        EditText searchText = searchView.findViewById(R.id.searchView);
+//        searchText.setHighlightColor(ThemeUtils.primaryColor(getContext(), true));
 
         final Handler handler = new Handler();
 
