@@ -596,6 +596,7 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             sharedIconView.setVisibility(View.VISIBLE);
 
             if (file.isSharedWithSharee() | file.isSharedWithMe()) {
+                // TODO check for NC16 (if merged), otherwise still show icon
                 sharedIconView.setVisibility(View.GONE);
             } else if (file.isSharedViaLink()) {
                 sharedIconView.setImageResource(R.drawable.shared_via_link);
