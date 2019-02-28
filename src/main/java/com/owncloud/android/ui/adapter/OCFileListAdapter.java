@@ -317,25 +317,43 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             if (holder instanceof OCFileListItemViewHolder) {
                 OCFileListItemViewHolder itemViewHolder = (OCFileListItemViewHolder) holder;
 
+                Resources resources = mContext.getResources();
+                float avatarRadius = resources.getDimension(R.dimen.list_item_avatar_icon_radius);
+
                 if (file.isSharedWithMe() && !multiSelect && !gridView && !mHideItemOptions) {
                     itemViewHolder.sharedAvatar.setVisibility(View.VISIBLE);
 
-                    Resources resources = mContext.getResources();
-
-                    float avatarRadius = resources.getDimension(R.dimen.list_item_avatar_icon_radius);
-
                     if (file.getOwnerId().contains("@")) {
-                        showFederatedShareAvatar(file, avatarRadius, resources, itemViewHolder);
+                        showFederatedShareAvatar(file.getOwnerId(), avatarRadius, resources, itemViewHolder);
                     } else {
                         itemViewHolder.sharedAvatar.setTag(file.getOwnerId());
                         DisplayUtils.setAvatar(mAccount, file.getOwnerId(), this, avatarRadius, resources,
                                                itemViewHolder.sharedAvatar, mContext);
                     }
 
-                    itemViewHolder.sharedAvatar.setOnClickListener(view ->
-                                                                       ocFileListFragmentInterface.showShareDetailView(file));
+                    if (file.canReshare()) {
+                        itemViewHolder.sharedAvatar.setOnClickListener(view -> ocFileListFragmentInterface
+                            .showShareDetailView(file));
+                    }
+                } else if (file.isSharedWithSharee()) {
+                    if (file.getSharees() != null && !file.getSharees().isEmpty()) {
+                        itemViewHolder.sharedAvatar.setVisibility(View.VISIBLE);
+
+                        String firstSharee = file.getSharees().get(0);
+                        if (firstSharee.contains("@")) {
+                            showFederatedShareAvatar(firstSharee, avatarRadius, resources, itemViewHolder);
+                        } else {
+                            itemViewHolder.sharedAvatar.setTag(firstSharee);
+                            DisplayUtils.setAvatar(mAccount, firstSharee, this, avatarRadius, resources,
+                                                   itemViewHolder.sharedAvatar, mContext);
+                        }
+
+                        itemViewHolder.sharedAvatar.setOnClickListener(view ->
+                                                                           ocFileListFragmentInterface.showShareDetailView(file));
+                    }
                 } else {
                     itemViewHolder.sharedAvatar.setVisibility(View.GONE);
+                    itemViewHolder.sharedAvatar.setOnClickListener(null);
                 }
 
                 if (onlyOnDevice) {
@@ -423,13 +441,15 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         }
     }
 
-        private void showFederatedShareAvatar(OCFile file, float avatarRadius, Resources resources,
+        private void showFederatedShareAvatar(String user, float avatarRadius, Resources resources,
                                               OCFileListItemViewHolder itemViewHolder) {
             // maybe federated share
-            String userId = file.getOwnerId().split("@")[0];
-            String server = file.getOwnerId().split("@")[1];
+            String[] split = user.split("@");
+            String userId = split[0];
+            String server = split[1];
 
-            String url = "https://" + server + "/avatar/" + userId + "/" +
+            // TODO better protocol handling?
+            String url = "https://" + server + "/index.php/avatar/" + userId + "/" +
                 DisplayUtils.convertDpToPixel(avatarRadius, mContext);
 
             Drawable placeholder;

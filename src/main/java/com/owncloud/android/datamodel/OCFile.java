@@ -37,6 +37,8 @@ import com.owncloud.android.lib.resources.files.model.ServerFileInterface;
 import com.owncloud.android.utils.MimeType;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
@@ -87,6 +89,7 @@ public class OCFile implements Parcelable, Comparable<OCFile>, ServerFileInterfa
     @Getter @Setter private int unreadCommentsCount;
     @Getter @Setter private String ownerId;
     @Getter @Setter private String ownerDisplayName;
+    @Getter @Setter private List<String> sharees = new ArrayList<>();
 
     /**
      * URI to the local path of the file contents, if stored in the device; cached after first call
