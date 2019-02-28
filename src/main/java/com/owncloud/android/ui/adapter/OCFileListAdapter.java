@@ -331,12 +331,11 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                                                itemViewHolder.sharedAvatar, mContext);
                     }
 
-                    if (file.canReshare()) {
-                        itemViewHolder.sharedAvatar.setOnClickListener(view -> ocFileListFragmentInterface
-                            .showShareDetailView(file));
-                    }
+                    itemViewHolder.sharedAvatar.setOnClickListener(view -> ocFileListFragmentInterface
+                        .showShareDetailView(file));
                 } else if (file.isSharedWithSharee()) {
                     if (file.getSharees() != null && !file.getSharees().isEmpty()) {
+                        Log_OC.d(this, "Sharees: " + file.getFileName() + " " + file.getSharees());
                         itemViewHolder.sharedAvatar.setVisibility(View.VISIBLE);
 
                         String firstSharee = file.getSharees().get(0);
@@ -596,10 +595,7 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         if (gridViewHolder instanceof OCFileListItemViewHolder || file.getUnreadCommentsCount() == 0) {
             sharedIconView.setVisibility(View.VISIBLE);
 
-            if (file.isSharedWithSharee()) {
-                sharedIconView.setImageResource(R.drawable.shared_via_users);
-                sharedIconView.setContentDescription(mContext.getString(R.string.shared_icon_shared));
-            } else if (file.isSharedWithMe()) {
+            if (file.isSharedWithSharee() | file.isSharedWithMe()) {
                 sharedIconView.setVisibility(View.GONE);
             } else if (file.isSharedViaLink()) {
                 sharedIconView.setImageResource(R.drawable.shared_via_link);
