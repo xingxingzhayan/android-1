@@ -38,10 +38,9 @@ package com.owncloud.android.ui.adapter;
     import android.widget.Filter;
     import android.widget.ImageView;
     import android.widget.LinearLayout;
+    import android.widget.RelativeLayout;
     import android.widget.TextView;
 
-    import com.bumptech.glide.Glide;
-    import com.bumptech.glide.request.target.BitmapImageViewTarget;
     import com.owncloud.android.R;
     import com.owncloud.android.authentication.AccountUtils;
     import com.owncloud.android.datamodel.FileDataStorageManager;
@@ -81,8 +80,6 @@ package com.owncloud.android.ui.adapter;
     import java.util.Vector;
 
     import androidx.annotation.NonNull;
-    import androidx.core.graphics.drawable.RoundedBitmapDrawable;
-    import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
     import androidx.recyclerview.widget.RecyclerView;
     import butterknife.BindView;
     import butterknife.ButterKnife;
@@ -321,38 +318,59 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 float avatarRadius = resources.getDimension(R.dimen.list_item_avatar_icon_radius);
 
                 if (file.isSharedWithMe() && !multiSelect && !gridView && !mHideItemOptions) {
-                    itemViewHolder.sharedAvatar.setVisibility(View.VISIBLE);
+                    itemViewHolder.sharedAvatars.setVisibility(View.VISIBLE);
+                    itemViewHolder.sharedAvatars.removeAllViews();
+
+                    ImageView avatar = new ImageView(mContext);
 
                     if (file.getOwnerId().contains("@")) {
                         showFederatedShareAvatar(file.getOwnerId(), avatarRadius, resources, itemViewHolder);
                     } else {
-                        itemViewHolder.sharedAvatar.setTag(file.getOwnerId());
+                        avatar.setTag(file.getOwnerId());
                         DisplayUtils.setAvatar(mAccount, file.getOwnerId(), this, avatarRadius, resources,
-                                               itemViewHolder.sharedAvatar, mContext);
+                                               avatar, mContext);
                     }
 
-                    itemViewHolder.sharedAvatar.setOnClickListener(view -> ocFileListFragmentInterface
+                    avatar.setOnClickListener(view -> ocFileListFragmentInterface
                         .showShareDetailView(file));
+
+                    itemViewHolder.sharedAvatars.addView(avatar);
+
                 } else if (file.isSharedWithSharee()) {
                     if (file.getSharees() != null && !file.getSharees().isEmpty()) {
                         Log_OC.d(this, "Sharees: " + file.getFileName() + " " + file.getSharees());
-                        itemViewHolder.sharedAvatar.setVisibility(View.VISIBLE);
+                        itemViewHolder.sharedAvatars.setVisibility(View.VISIBLE);
+                        itemViewHolder.sharedAvatars.removeAllViews();
 
-                        String firstSharee = file.getSharees().get(0);
-                        if (firstSharee.contains("@")) {
-                            showFederatedShareAvatar(firstSharee, avatarRadius, resources, itemViewHolder);
-                        } else {
-                            itemViewHolder.sharedAvatar.setTag(firstSharee);
-                            DisplayUtils.setAvatar(mAccount, firstSharee, this, avatarRadius, resources,
-                                                   itemViewHolder.sharedAvatar, mContext);
+                        ArrayList<String> list = new ArrayList<>();
+                        list.add("user1");
+                        list.add("admin");
+                        list.add("TestUser");
+                        file.setSharees(list);
+                        for (int i = 0; i < Math.min(file.getSharees().size(), 3); i++) {
+                            String sharee = file.getSharees().get(i);
+
+                            ImageView avatar = new ImageView(mContext);
+
+                            if (sharee.contains("@")) {
+                                showFederatedShareAvatar(sharee, avatarRadius, resources, itemViewHolder);
+                            } else {
+                                avatar.setTag(sharee);
+                                DisplayUtils.setAvatar(mAccount, sharee, this, avatarRadius, resources,
+                                                       avatar, mContext);
+                            }
+
+                            avatar.setOnClickListener(view -> ocFileListFragmentInterface.showShareDetailView(file));
+
+                            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                            layoutParams.setMargins(0, 0, i * 60, 0);
+                            avatar.setLayoutParams(layoutParams);
+                            itemViewHolder.sharedAvatars.addView(avatar);
                         }
-
-                        itemViewHolder.sharedAvatar.setOnClickListener(view ->
-                                                                           ocFileListFragmentInterface.showShareDetailView(file));
                     }
                 } else {
-                    itemViewHolder.sharedAvatar.setVisibility(View.GONE);
-                    itemViewHolder.sharedAvatar.setOnClickListener(null);
+                    itemViewHolder.sharedAvatars.setVisibility(View.GONE);
+                    itemViewHolder.sharedAvatars.removeAllViews();
                 }
 
                 if (onlyOnDevice) {
@@ -459,20 +477,21 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 placeholder = resources.getDrawable(R.drawable.account_circle_white);
             }
 
-            itemViewHolder.sharedAvatar.setTag(null);
-            Glide.with(mContext).load(url)
-                .asBitmap()
-                .placeholder(placeholder)
-                .error(placeholder)
-                .into(new BitmapImageViewTarget(itemViewHolder.sharedAvatar) {
-                    @Override
-                    protected void setResource(Bitmap resource) {
-                        RoundedBitmapDrawable circularBitmapDrawable =
-                            RoundedBitmapDrawableFactory.create(mContext.getResources(), resource);
-                        circularBitmapDrawable.setCircular(true);
-                        itemViewHolder.sharedAvatar.setImageDrawable(circularBitmapDrawable);
-                    }
-                });
+            // TODO
+//            itemViewHolder.sharedAvatar.setTag(null);
+//            Glide.with(mContext).load(url)
+//                .asBitmap()
+//                .placeholder(placeholder)
+//                .error(placeholder)
+//                .into(new BitmapImageViewTarget(itemViewHolder.sharedAvatar) {
+//                    @Override
+//                    protected void setResource(Bitmap resource) {
+//                        RoundedBitmapDrawable circularBitmapDrawable =
+//                            RoundedBitmapDrawableFactory.create(mContext.getResources(), resource);
+//                        circularBitmapDrawable.setCircular(true);
+//                        itemViewHolder.sharedAvatar.setImageDrawable(circularBitmapDrawable);
+//                    }
+//                });
         }
 
     private void setThumbnail(OCFile file, ImageView thumbnailView) {
@@ -931,8 +950,8 @@ public class OCFileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         @BindView(R.id.overflow_menu)
         public ImageView overflowMenu;
 
-        @BindView(R.id.sharedAvatar)
-        public ImageView sharedAvatar;
+            @BindView(R.id.sharedAvatars)
+            public RelativeLayout sharedAvatars;
 
         private OCFileListItemViewHolder(View itemView) {
             super(itemView);

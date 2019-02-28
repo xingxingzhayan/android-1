@@ -171,26 +171,26 @@
             android:paddingStart="@dimen/standard_half_padding"
             android:src="@drawable/ic_unshared" />
 
-        <ImageView
-            android:id="@+id/sharedAvatar"
-            android:layout_width="@dimen/file_icon_size"
+        <RelativeLayout
+            android:id="@+id/sharedAvatars"
+            android:layout_width="100dp"
+            android:background="@color/black"
             android:layout_height="@dimen/file_icon_size"
             android:layout_centerVertical="true"
+            android:layout_alignRight="@id/sharedIcon"
+            android:layout_alignEnd="@id/sharedIcon"
             android:layout_toEndOf="@id/sharedIcon"
             android:layout_toRightOf="@id/sharedIcon"
             android:contentDescription="@string/shared_avatar_desc"
-            android:clickable="true"
-            android:focusable="true"
-            android:src="@drawable/ic_user"
-            android:visibility="gone" />
+            android:visibility="visible" />
 
         <ImageView
             android:id="@+id/custom_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_centerVertical="true"
-            android:layout_toEndOf="@id/sharedAvatar"
-            android:layout_toRightOf="@id/sharedAvatar"
+            android:layout_toEndOf="@id/sharedAvatars"
+            android:layout_toRightOf="@id/sharedAvatars"
             android:clickable="false"
             android:contentDescription="@string/checkbox"
             android:focusable="false"

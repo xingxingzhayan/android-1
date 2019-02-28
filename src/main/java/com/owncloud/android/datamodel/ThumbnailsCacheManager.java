@@ -73,7 +73,6 @@ import java.lang.ref.WeakReference;
 import java.net.URLEncoder;
 import java.util.List;
 
-import androidx.annotation.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
@@ -863,6 +862,7 @@ public final class ThumbnailsCacheManager {
         Drawable doAvatarInBackground() {
             Bitmap avatar = null;
 
+            // TODO escape username here?
             String accountName = mUserId + "@" + mServerName;
 
             ArbitraryDataProvider arbitraryDataProvider = new ArbitraryDataProvider(mContext.getContentResolver());
