@@ -24,5 +24,8 @@ public interface AppPreferences {
     boolean instantPictureUploadEnabled();
     boolean instantVideoUploadEnabled();
 
+    float getGridColumns();
+    void setGridColumns(float gridColumns);
+
     void removeLegacyPreferences();
 }
