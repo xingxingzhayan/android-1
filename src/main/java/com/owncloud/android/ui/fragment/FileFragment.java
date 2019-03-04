@@ -43,7 +43,7 @@ public class FileFragment extends Fragment {
 
     private OCFile mFile;
 
-    protected ContainerActivity mContainerActivity;
+    protected ContainerActivity containerActivity;
 
 
     /**
@@ -101,7 +101,7 @@ public class FileFragment extends Fragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            mContainerActivity = (ContainerActivity) activity;
+            containerActivity = (ContainerActivity) activity;
 
         } catch (ClassCastException e) {
             throw new IllegalArgumentException(activity.toString() + " must implement " +
@@ -115,7 +115,7 @@ public class FileFragment extends Fragment {
      */
     @Override
     public void onDetach() {
-        mContainerActivity = null;
+        containerActivity = null;
         super.onDetach();
     }
 
