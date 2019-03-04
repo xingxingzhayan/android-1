@@ -561,12 +561,14 @@ public final class PreferenceManager implements AppPreferences {
         saveBooleanPreference(context, AUTO_PREF__SHOW_DETAILED_TIMESTAMP, showDetailedTimestamp);
     }
 
-    public static boolean isShowMediaScanNotifications(Context context) {
-        return getDefaultSharedPreferences(context).getBoolean(PREF__SHOW_MEDIA_SCAN_NOTIFICATIONS, true);
+    @Override
+    public boolean isShowMediaScanNotifications() {
+        return preferences.getBoolean(PREF__SHOW_MEDIA_SCAN_NOTIFICATIONS, true);
     }
 
-    public static void setShowMediaScanNotifications(Context context, boolean value) {
-        saveBooleanPreference(context, PREF__SHOW_MEDIA_SCAN_NOTIFICATIONS, value);
+    @Override
+    public void setShowMediaScanNotifications(boolean value) {
+        preferences.edit().putBoolean(PREF__SHOW_MEDIA_SCAN_NOTIFICATIONS, value).apply();
     }
 
     private static void saveBooleanPreference(Context context, String key, boolean value) {

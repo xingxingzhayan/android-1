@@ -24,5 +24,8 @@ public interface AppPreferences {
     boolean instantPictureUploadEnabled();
     boolean instantVideoUploadEnabled();
 
+    boolean isShowMediaScanNotifications();
+    void setShowMediaScanNotifications(boolean showMediaScanNotification);
+
     void removeLegacyPreferences();
 }
